@@ -3,7 +3,7 @@
 
     <groupId>com.theoryinpractise</groupId>
     <artifactId>quickcheckng</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <description>A TestNG @DataProvider generator for QuickCheck Generators</description>
     <name>quickcheckng</name>
@@ -16,7 +16,7 @@
     <scm>
         <developerConnection>scm:git:git@github.com:talios/quickcheckng.git</developerConnection>
         <url>http://github.com/talios/quickcheckng</url>
-      <tag>quickcheckng-1.0.1</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <developers>
