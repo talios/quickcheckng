@@ -1,0 +1,82 @@
+= QuickCheckNG
+
+== Introduction
+
+QuickCheckNG is a Java Annotation Processor to generate TestNG @DataProvider methods for a set of QuickCheck
+generators.
+
+== Building
+
+[source]
+----
+mvn clean install
+----
+
+== Usage
+
+Include in your project a class named `*Generators.java` with a set of `public static` methods returning `Generator`
+instances:
+
+[source]
+----
+package com.theoryinpractise.quickcheckng.example;
+
+import com.theoryinpractise.quickcheckng.DataProviders;
+import net.java.quickcheck.Generator;
+
+import static net.java.quickcheck.generator.CombinedGenerators.uniqueValues;
+import static net.java.quickcheck.generator.PrimitiveGenerators.strings;
+
+@DataProviders
+public class PasswordGenerators {
+
+  public static Generator<String> validPasswords() {
+    return strings("ABCDEFG123456", 6, 60);
+  }
+
+}
+----
+
+When compiling, the following class will be generated for you:
+
+[source]
+----
+package com.theoryinpractise.quickcheckng.example;
+
+import java.util.Iterator;
+import org.testng.annotations.DataProvider;
+import static com.theoryinpractise.quickcheckng.testng.GeneratorProvider.toObjectArrayIterator;
+
+public final class PasswordGeneratorsDataProviders {
+
+  /**
+   * A TestNG @DataProvider for the validPasswords quickcheck generator
+   */
+  @DataProvider
+  public static final Iterator<Object[]> validPasswords() {
+    return toObjectArrayIterator(PasswordGenerators.validPasswords());
+  }
+
+}
+----
+
+The generated @DataProvider method simply wraps the QuickCheck Generator, wrapping each generated value in a 1
+element object array to be passed to a TestNG test:
+
+[source]
+----
+@Test(dataProviderClass = PasswordGeneratorsDataProviders.class, dataProvider = "validPasswords")
+public void testPasswordLengths(String password) {
+  try {
+    UserManagerImpl.validatePassword(password);
+  } catch (SmxValidationFailureException e) {
+    fail("Valid length password should not fail: " + password + " - " + e.getMessage());
+  }
+}
+----
+
+
+
+== License
+
+Apache 2.0
