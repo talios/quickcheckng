@@ -1,10 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.theoryinpractise</groupId>
     <artifactId>quickcheckng</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <description>A TestNG @DataProvider generator for QuickCheck Generators</description>
     <name>quickcheckng</name>
@@ -117,6 +117,11 @@
             <groupId>net.java.quickcheck</groupId>
             <artifactId>quickcheck</artifactId>
             <version>0.6</version>
+        </dependency>
+        <dependency>
+          <groupId>io.reactivex</groupId>
+          <artifactId>rxjava</artifactId>
+          <version>1.0.13</version>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
