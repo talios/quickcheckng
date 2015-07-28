@@ -14,13 +14,10 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import static javax.lang.model.element.Modifier.FINAL;
@@ -28,8 +25,6 @@ import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 
 public class DataProviderProcessor extends AbstractProcessor {
-
-  private static final List<Integer> PUBLIC_AND_STATIC_MODIFIERS = Arrays.asList(Modifier.PUBLIC, Modifier.STATIC);
 
   @Override
   public Set<String> getSupportedAnnotationTypes() {
@@ -73,13 +68,14 @@ public class DataProviderProcessor extends AbstractProcessor {
           .beginType(className, "class", EnumSet.of(PUBLIC, FINAL));
 
     for (Element element : type.getEnclosedElements()) {
-      if (element.getKind() == ElementKind.METHOD && element.getModifiers().containsAll(PUBLIC_AND_STATIC_MODIFIERS)) {
+      if (element.getKind() == ElementKind.METHOD && element.getModifiers().containsAll(EnumSet.of(PUBLIC, STATIC)) ) {
+
         for (Element element1 : element.getEnclosedElements()) {
           reportNote(element1.toString(), element);
         }
 
         writer.emitEmptyLine()
-              .emitJavadoc("TestNG @DataProvider for the " + element.getSimpleName() + " quick check generator")
+              .emitJavadoc("TestNG @DataProvider for " + element.getSimpleName())
               .emitAnnotation(DataProvider.class)
               .beginMethod("Iterator<Object[]>", element.getSimpleName().toString(), EnumSet.of(PUBLIC, STATIC, FINAL))
               .emitStatement("return toObjectArrayIterator(" + type.getSimpleName() + "." + element.toString() + ")")
