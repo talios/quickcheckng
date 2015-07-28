@@ -1,7 +1,11 @@
 package com.theoryinpractise.quickcheckng.processor;
 
-import com.squareup.javawriter.JavaWriter;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeSpec;
 import com.theoryinpractise.quickcheckng.DataProviders;
+import com.theoryinpractise.quickcheckng.testng.GeneratorProvider;
 import org.testng.annotations.DataProvider;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -24,7 +28,10 @@ import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 
-public class DataProviderProcessor extends AbstractProcessor {
+public class DataProviderProcessor
+    extends AbstractProcessor {
+
+  private static final ParameterizedTypeName objectArrayIterator = ParameterizedTypeName.get(Iterator.class, Object[].class);
 
   @Override
   public Set<String> getSupportedAnnotationTypes() {
@@ -57,40 +64,49 @@ public class DataProviderProcessor extends AbstractProcessor {
       reportError("Classes annotated with @DataProviders MUST be named *Generators", type);
     }
 
-    String className = generatedClassName(type);
-    Writer srcWriter = processingEnv.getFiler().createSourceFile(className).openWriter();
-    JavaWriter writer = new JavaWriter(srcWriter);
+    Writer srcWriter = processingEnv.getFiler().createSourceFile(generatedQualifiedClassName(type)).openWriter();
 
-    writer.emitPackage(packageOf(type))
-          .emitImports(Iterator.class, DataProvider.class)
-          .emitStaticImports("com.theoryinpractise.quickcheckng.testng.GeneratorProvider.toObjectArrayIterator")
-          .emitEmptyLine()
-          .beginType(className, "class", EnumSet.of(PUBLIC, FINAL));
+    final TypeSpec.Builder builder = TypeSpec.classBuilder(generatedSimpleClassName(type)).addModifiers(PUBLIC, FINAL);
 
     for (Element element : type.getEnclosedElements()) {
-      if (element.getKind() == ElementKind.METHOD && element.getModifiers().containsAll(EnumSet.of(PUBLIC, STATIC)) ) {
+      if (element.getKind() == ElementKind.METHOD && element.getModifiers().containsAll(EnumSet.of(PUBLIC, STATIC))) {
 
         for (Element element1 : element.getEnclosedElements()) {
           reportNote(element1.toString(), element);
         }
 
-        writer.emitEmptyLine()
-              .emitJavadoc("TestNG @DataProvider for " + element.getSimpleName())
-              .emitAnnotation(DataProvider.class)
-              .beginMethod("Iterator<Object[]>", element.getSimpleName().toString(), EnumSet.of(PUBLIC, STATIC, FINAL))
-              .emitStatement("return toObjectArrayIterator(" + type.getSimpleName() + "." + element.toString() + ")")
-              .endMethod();
+
+        MethodSpec methodSpec = MethodSpec.methodBuilder(element.getSimpleName().toString())
+                                          .addModifiers(PUBLIC, STATIC)
+                                          .addAnnotation(DataProvider.class)
+                                          .addJavadoc("TestNG @DataProvider for " + element.getSimpleName() + "\n")
+                                          .returns(objectArrayIterator)
+                                          .addStatement("return $T.toObjectArrayIterator(" + type.getSimpleName() + "." + element.toString() + ")",
+                                                        GeneratorProvider.class)
+                                          .build();
+
+        builder.addMethod(methodSpec);
+
       }
     }
 
-    writer.emitEmptyLine()
-          .endType();
+
+    TypeSpec helloWorld = builder.build();
+
+    JavaFile javaFile = JavaFile.builder(packageOf(type), helloWorld)
+                                .skipJavaLangImports(true)
+                                .build();
+
+    javaFile.writeTo(srcWriter);
 
     srcWriter.close();
 
   }
 
-  private String generatedClassName(TypeElement type) {
+  private String generatedSimpleClassName(TypeElement type) {
+    return type.getSimpleName().toString() + "DataProviders";
+  }
+  private String generatedQualifiedClassName(TypeElement type) {
     return type.getQualifiedName().toString() + "DataProviders";
   }
 
