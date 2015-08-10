@@ -2,7 +2,6 @@ package com.theoryinpractise.quickcheckng.testng;
 
 import net.java.quickcheck.Generator;
 import rx.Observable;
-import rx.Subscriber;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,19 +25,6 @@ public class GeneratorProvider {
       dataPoints.add(new Object[] {value});
     }
     return dataPoints.iterator();
-  }
-
-  public static <T> Observable<T> fromGenerator(final Generator<T> generator) {
-    return Observable.create(new Observable.OnSubscribe<T>() {
-      @Override
-      public void call(Subscriber<? super T> subscriber) {
-        subscriber.onStart();
-        for (T value : toIterable(generator)) {
-          subscriber.onNext(value);
-        }
-        subscriber.onCompleted();
-      }
-    });
   }
 
 }
